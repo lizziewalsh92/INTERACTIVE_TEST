@@ -137,7 +137,7 @@
       color: #000;
     }
 
-    #floor-input {
+   #floor-input {
       width: 90%;
       padding: 10px;
       font-size: 1.2rem;
@@ -147,34 +147,45 @@
       color: #000;
     }
 
-    #submit-button {
+    .floor-button {
       background-color: #72ec0e;
       color: #000;
       border: none;
-      padding: 10px 20px;
+      padding: 15px;
       font-size: 1.2rem;
-      align-content: center;
       cursor: pointer;
-      margin-top: 60px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
       text-align: center;
+      flex: 1;
+      max-width: 200px;
+      min-width: 100px;
+      box-sizing: border-box;
     }
 
-    #submit-button:hover {
+    .floor-button:hover {
       background-color: #fff;
       color: #000;
       border: 2px solid #72ec0e;
     }
 
 
-    #watertankmap {
-      padding: 5px;
-      margin-top: 5px;
-      text-align: center;
-      background-color: #fff;
-    }
+  #watertankmap {
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  margin: 0 auto;
+  max-width: 100%;
+  overflow: hidden;
+}
+#watertankmap iframe {
+  width: 100%;
+  height: 990px;
+  border: none;
+  display: block;
+  max-width: 100%;
+  overflow: visible;
+}
 
     .input-wrapper {
       position: relative;
