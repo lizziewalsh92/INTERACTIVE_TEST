@@ -177,13 +177,21 @@
       border-radius: 1px;
     }
 
-    .input-wrapper {
-      position: relative;
-    }
+   .autocomplete-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
 
-    .pac-container {
+
+   .pac-container {
   z-index: 10000 !important;
-    }
+  left: unset !important;
+  right: unset !important;
+  width: 90% !important;
+  max-width: 500px !important;
+  margin: 0 auto !important;
+}
 
     #address-input,
 #floor-input,
