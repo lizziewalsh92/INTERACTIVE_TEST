@@ -180,10 +180,15 @@
       position: relative;
     }
 
-    .pac-container {
+  .pac-container {
+  position: fixed !important;
   z-index: 10000 !important;
-      position: fixed;
-    }
+  width: 90% !important; /* match input width */
+  max-width: 500px !important; /* match input max-width */
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  box-sizing: border-box !important;
+}
 
     #address-input,
 #floor-input,
