@@ -959,80 +959,82 @@
 ]
     let Leadinfo = null;
 
-      // Load the full GeoJSON file, make sure to add ./ so it looks in the folder
+            // Load the full GeoJSON file, make sure to add ./ so it looks in the folder
       fetch('./lead-address-slim.geojson')
-    .then(response => response.json())
-    .then(data => {
-      Leadinfo = data;
-      console.log("Lead pipe data loaded.");
-      Leadinfo.features.forEach(feature => {
-  if (!feature?.properties?.address) {
-    console.warn("Missing address in feature:", feature);
-  }
-});
+        .then(response => response.json())
+        .then(data => {
+          Leadinfo = data;
+          console.log("Lead pipe data loaded.");
+          Leadinfo.features.forEach(feature => {
+            if (!feature?.properties?.address) {
+              console.warn("Missing address in feature:", feature);
+            }
+          });
 
-    })
-    .catch(error => console.error('Error loading lead pipe data:', error));
+        })
+        .catch(error => console.error('Error loading lead pipe data:', error));
 
-    function normalizeAddress(address) {
-    return address.trim().toLowerCase().replace(/\s+/g, ' ');
-  }
+      function normalizeAddress(address) {
+        return address.trim().toLowerCase().replace(/\s+/g, ' ');
+      }
 
-  function isNearDirtyTank(userAddress) {
-    const userNorm = normalizeAddress(userAddress);
-    const tank = Tankinfo.find(t => normalizeAddress(t.ADDRESS) === userNorm);
-    return tank && tank["# OF VIOLATIONS"] > 0;
-  }
+      function isNearDirtyTank(userAddress) {
+        const userNorm = normalizeAddress(userAddress);
+        const tank = Tankinfo.find(t => normalizeAddress(t.ADDRESS) === userNorm);
+        return tank && tank["# OF VIOLATIONS"] > 0;
+      }
 
-  function hasLeadPipes(userAddress) {
-  if (!Leadinfo) return false;
-  const userNorm = normalizeAddress(userAddress);
+      function hasLeadPipes(userAddress) {
+        if (!Leadinfo) return false;
+        const userNorm = normalizeAddress(userAddress);
 
-  return Leadinfo.features.some(feature => {
-    const addr = feature?.properties?.address;
-    return addr && normalizeAddress(addr) === userNorm;
-  });
-}
+        return Leadinfo.features.some(feature => {
+          const addr = feature?.properties?.address;
+          return addr && normalizeAddress(addr) === userNorm;
+        });
+      }
 
-  document.getElementById("submit-button").addEventListener("click", () => {
-    const address = document.getElementById("address-input").value;
-    const floorInput = document.getElementById("floor-input").value.toLowerCase();
-    const isHighFloor = floorInput.includes("yes") || parseInt(floorInput) >= 6;
+      document.querySelectorAll(".floor-button").forEach(button => {
+        button.addEventListener("click", () => {
+          const address = document.getElementById("address-input").value;
+          const isHighFloor = button.dataset.floor === "yes";
 
-    if (!address) {
-      document.getElementById("custom-output").innerText = "Please enter your address.";
-      return;
-    }
+          if (!address) {
+            document.getElementById("custom-output").innerText = "Please enter your address.";
+            return;
+          }
 
-    const lead = hasLeadPipes(address);
-    const tank = isHighFloor && isNearDirtyTank(address);
+          const lead = hasLeadPipes(address);
+          const tank = isHighFloor && isNearDirtyTank(address);
 
-    const output = `Your apartment ${lead ? "DOES" : " does not"} have lead pipes and ${tank ? "IS" : " is not"} served by a water tank with health code violations.`;
-    const outputBox = document.getElementById("custom-output");
-document.getElementById("result-text").innerText = output;
-outputBox.classList.add("visible");
-document.getElementById("watertankmap").style.display = "block";
-  });
-  </script>
+          const output = `Your apartment ${lead ? "DOES" : " does not"} have known lead pipes and ${tank ? "does" : " does not"} have a water tank with known health code violations.`;
 
-  <script>
-    const observerOptions = {
-      threshold: 0.3
-    };
-
-    const revealOnScroll = (entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
+          const outputBox = document.getElementById("custom-output");
+          document.getElementById("result-text").innerText = output;
+          outputBox.classList.add("visible");
+          document.getElementById("watertankmap").style.display = "block";
+        });
       });
-    };
+    </script>
 
-    const observer = new IntersectionObserver(revealOnScroll, observerOptions);
-    const targets = document.querySelectorAll('#interactive1, #watertankmap');
-    targets.forEach(target => observer.observe(target));
-  </script>
+    <script>
+      const observerOptions = {
+        threshold: 0.3
+      };
+
+      const revealOnScroll = (entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      };
+
+      const observer = new IntersectionObserver(revealOnScroll, observerOptions);
+      const targets = document.querySelectorAll('#interactive1, #watertankmap');
+      targets.forEach(target => observer.observe(target));
+    </script>
 
 </body>
 
