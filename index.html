@@ -1007,6 +1007,11 @@
     .replace(/\bdrive\b/g, 'dr')
     .replace(/\bqueens\b/g, '')
     .replace(/\bnew york\b/g, '')
+    .replace(/\bbrooklyn\b/g, '')
+    .replace(/\bbronx\b/g, '')
+    .replace(/\bmanhattan\b/g, '')
+    .replace(/\bstaten island\b/g, '')
+    .replace(/\busa\b/g, '')
     .replace(/,/g, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
@@ -1038,11 +1043,14 @@ return Leadinfo.features.some(feature => {
     console.warn("Skipping bad address entry:", feature);
     return false;
   }
+    console.log("Normalized user address:", userNorm);
+    console.log("Normalized dataset address:", normalizeAddress(addr));
+
   console.log("Comparing to:", normalizeAddress(addr));
   return normalizeAddress(addr) === userNorm;
 });
       }
-      
+
       document.querySelectorAll(".floor-button").forEach(button => {
         button.addEventListener("click", () => {
           const address = document.getElementById("address-input").value;
