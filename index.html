@@ -977,7 +977,7 @@
 
 
     let Leadinfo = null;
-    
+
     fetch('https://www.googleapis.com/drive/v3/files/1SEo5FTvbLgpWgdlYPp4WVs8-ha_LrXQJ?alt=media&key=AIzaSyAL5PtDf5j--vnHL8AqIS2WVeOEx_-Ywko')
   .then(response => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -994,8 +994,10 @@
   })
   .catch(error => console.error('Error loading lead pipe data:', error));
        
-        function normalizeAddress(address) {
-  return address.trim()
+   function normalizeAddress(address) {
+  if (!address || typeof address !== 'string') return '';
+  return address
+    .trim()
     .toLowerCase()
     .replace(/\s+/g, ' ')
     .replace(/\bstreet\b/g, 'st')
@@ -1025,17 +1027,20 @@ function isNearDirtyTank(address) {
   });
 }
 
-      function hasLeadPipes(address) {
+      function hasLeadPipes(address) 
         if (!Leadinfo) return false;
         const userNorm = normalizeAddress(address);
         console.log("Checking for lead pipes at:", userNorm);
 
-      return Leadinfo.features.some(feature => {
-        const addr = feature?.properties?.FullAddress;
-        console.log("Comparing to:", normalizeAddress(addr));
-        return addr && normalizeAddress(addr) === userNorm;
-  });
-}
+return Leadinfo.features.some(feature => {
+  const addr = feature?.properties?.FullAddress;
+  if (!addr) {
+    console.warn("Skipping bad address entry:", feature);
+    return false;
+  }
+  console.log("Comparing to:", normalizeAddress(addr));
+  return normalizeAddress(addr) === userNorm;
+});
 
       document.querySelectorAll(".floor-button").forEach(button => {
         button.addEventListener("click", () => {
