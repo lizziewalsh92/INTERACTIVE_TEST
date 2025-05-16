@@ -994,7 +994,7 @@
   })
   .catch(error => console.error('Error loading lead pipe data:', error));
        
-   function normalizeAddress(address) {
+  function normalizeAddress(address) {
   if (!address || typeof address !== 'string') return '';
   return address
     .trim()
@@ -1005,12 +1005,11 @@
     .replace(/\broad\b/g, 'rd')
     .replace(/\bplace\b/g, 'pl')
     .replace(/\bdrive\b/g, 'dr')
-    .replace(/\bqueens\b/g, '')
-    .replace(/\bnew york\b/g, '')
     .replace(/\bbrooklyn\b/g, '')
-    .replace(/\bbronx\b/g, '')
     .replace(/\bmanhattan\b/g, '')
-    .replace(/\bstaten island\b/g, '')
+    .replace(/\bqueens\b/g, '')
+    .replace(/\bbronx\b/g, '')
+    .replace(/\bny\b/g, '')
     .replace(/\busa\b/g, '')
     .replace(/,/g, '')
     .replace(/\s{2,}/g, ' ')
