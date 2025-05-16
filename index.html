@@ -1027,7 +1027,7 @@ function isNearDirtyTank(address) {
   });
 }
 
-      function hasLeadPipes(address) 
+      function hasLeadPipes(address) {
         if (!Leadinfo) return false;
         const userNorm = normalizeAddress(address);
         console.log("Checking for lead pipes at:", userNorm);
@@ -1041,7 +1041,8 @@ return Leadinfo.features.some(feature => {
   console.log("Comparing to:", normalizeAddress(addr));
   return normalizeAddress(addr) === userNorm;
 });
-
+      }
+      
       document.querySelectorAll(".floor-button").forEach(button => {
         button.addEventListener("click", () => {
           const address = document.getElementById("address-input").value;
