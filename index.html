@@ -979,20 +979,25 @@
     let Leadinfo = null;
 
             // Load the full GeoJSON file, make sure to add ./ so it looks in the folder
-      fetch('https://www.googleapis.com/drive/v3/files/1SEo5FTvbLgpWgdlYPp4WVs8-ha_LrXQJ?alt=media&key=AIzaSyAL5PtDf5j--vnHL8AqIS2WVeOEx_-Ywko') 
-        .then(response => response.json())
-        .then(data => {
-          Leadinfo = data;
-          console.log("Lead pipe data loaded. Sample entry:", data.features?.[0]?.properties?.FullAddress);
-          Leadinfo.features.forEach(feature => {
-            if (!feature?.properties?.FullAddress) {
-              console.warn("Missing address in feature or bad FullAddress:", feature);
-            }
-          });
+      fetch('https://www.googleapis.com/drive/v3/files/1SEo5FTvbLgpWgdlYPp4WVs8-ha_LrXQJ?alt=media&key=AIzaSyAL5PtDf5j--vnHL8AqIS2WVeOEx_-Ywko')
+  .then(response => response.json())
+  .then(data => {
+    // Store the original data
+    Leadinfo = data;
 
-        })
-        .catch(error => console.error('Error loading lead pipe data:', error));
+    // Remove features with missing FullAddress
+    Leadinfo.features = Leadinfo.features.filter(f => !!f.properties?.FullAddress);
 
+    console.log(" Lead pipe data loaded. Sample entry:", Leadinfo.features?.[0]?.properties?.FullAddress);
+
+    // Log warning for any remaining questionable entries
+    Leadinfo.features.forEach(feature => {
+      if (!feature?.properties?.FullAddress) {
+        console.warn(" Skipping feature due to missing FullAddress:", feature);
+      }
+    });
+  })
+  .catch(error => console.error(' Error loading lead pipe data:', error));
         function normalizeAddress(address) {
   return address.trim()
     .toLowerCase()
