@@ -978,29 +978,27 @@
 
     let Leadinfo = null;
 
-fetch('https://drive.google.com/uc?id=1SEo5FTvbLgpWgdlYPp4WVs8-ha_LrXQJ&export=download')
+    fetch('https://www.googleapis.com/drive/v3/files/1SEo5FTvbLgpWgdlYPp4WVs8-ha_LrXQJ?alt=media&key=AIzaSyAL5PtDf5j--vnHL8AqIS2WVeOEx_-Ywko')
   .then(response => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return response.json();
   })
   .then(data => {
     Leadinfo = data;
-    console.log("✅ Lead pipe data loaded. Sample entry:", data.features?.[0]?.properties?.FullAddress);
+    console.log("Lead pipe data loaded. Sample entry:", data.features?.[0]?.properties?.FullAddress);
     Leadinfo.features.forEach(feature => {
       if (!feature?.properties?.FullAddress) {
-        console.warn("⚠️ Missing address in feature or bad FullAddress:", feature);
+        console.warn("Missing address in feature or bad FullAddress:", feature);
       }
     });
   })
-  .catch(error => console.error('❌ Error loading lead pipe data:', error));
+  .catch(error => console.error('Error loading lead pipe data:', error));
        
   function normalizeAddress(address) {
   if (!address || typeof address !== 'string') return '';
   return address
     .trim()
     .toLowerCase()
-    .replace(/\bapt\b.*$/i, '')  // Remove apt/unit info
-    .replace(/\bfloor\b.*$/i, '') // Remove floor info
     .replace(/\s+/g, ' ')
     .replace(/\bstreet\b/g, 'st')
     .replace(/\bavenue\b/g, 'ave')
@@ -1031,47 +1029,26 @@ function isNearDirtyTank(address) {
       userNorm.includes(tankNorm)
     ) && t["# OF VIOLATIONS"] > 0;
   });
-};
+}
 
-     function hasLeadPipes(address) {
-  if (!Leadinfo) return false;
-  const userNorm = normalizeAddress(address);
-  console.log("Checking for lead pipes at:", userNorm);
+      function hasLeadPipes(address) {
+        if (!Leadinfo) return false;
+        const userNorm = normalizeAddress(address);
+        console.log("Checking for lead pipes at:", userNorm);
 
- const extractKeyParts = (addr) => {
-  const match = addr.match(/^(\d+)\s+(.+)$/);
-  if (!match) return null;
-  return {
-    number: match[1],
-    street: normalizeAddress(match[2])
-  };
-};
-
-  const userParts = extractKeyParts(userNorm);
-  if (!userParts) {
-    console.warn("Could not parse user address:", userNorm);
+return Leadinfo.features.some(feature => {
+  const addr = feature?.properties?.FullAddress;
+  if (!addr) {
+    console.warn("Skipping bad address entry:", feature);
     return false;
   }
+    console.log("Normalized user address:", userNorm);
+    console.log("Normalized dataset address:", normalizeAddress(addr));
 
-  return Leadinfo.features.some(feature => {
-    const rawAddr = feature?.properties?.FullAddress;
-    if (!rawAddr) return false;
-
-    const datasetNorm = normalizeAddress(rawAddr);
-    const datasetParts = extractKeyParts(datasetNorm);
-    if (!datasetParts) return false;
-    if (!datasetNorm || datasetNorm.length < 10) return false;
-
-    const isMatch = userParts.number === datasetParts.number && userParts.street === datasetParts.street;
-
-    if (isMatch) {
-      console.warn("✅ Lead pipe match:", rawAddr, "<-->", address);
-    }
-
-    return isMatch;
-  });
-}
-      
+  console.log("Comparing to:", normalizeAddress(addr));
+  return normalizeAddress(addr) === userNorm;
+});
+      }
 
       document.querySelectorAll(".floor-button").forEach(button => {
         button.addEventListener("click", () => {
