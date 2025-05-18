@@ -978,21 +978,21 @@
 
     let Leadinfo = null;
 
-    fetch('https://www.googleapis.com/drive/v3/files/1SEo5FTvbLgpWgdlYPp4WVs8-ha_LrXQJ?alt=media&key=AIzaSyAL5PtDf5j--vnHL8AqIS2WVeOEx_-Ywko')
+fetch('https://drive.google.com/uc?id=1SEo5FTvbLgpWgdlYPp4WVs8-ha_LrXQJ&export=download')
   .then(response => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return response.json();
   })
   .then(data => {
     Leadinfo = data;
-    console.log("Lead pipe data loaded. Sample entry:", data.features?.[0]?.properties?.FullAddress);
+    console.log("✅ Lead pipe data loaded. Sample entry:", data.features?.[0]?.properties?.FullAddress);
     Leadinfo.features.forEach(feature => {
       if (!feature?.properties?.FullAddress) {
-        console.warn("Missing address in feature or bad FullAddress:", feature);
+        console.warn("⚠️ Missing address in feature or bad FullAddress:", feature);
       }
     });
   })
-  .catch(error => console.error('Error loading lead pipe data:', error));
+  .catch(error => console.error('❌ Error loading lead pipe data:', error));
        
   function normalizeAddress(address) {
   if (!address || typeof address !== 'string') return '';
