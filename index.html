@@ -986,35 +986,36 @@
   .then(data => {
     Leadinfo = data;
     console.log("Lead pipe data loaded. Sample entry:", data.features?.[0]?.properties?.FullAddress);
-    Leadinfo.features.forEach(feature => {
-      if (!feature?.properties?.FullAddress) {
-        console.warn("Missing address in feature or bad FullAddress:", feature);
+    Leadinfo.features.forEach((feature, i) => {
+      if (!feature?.properties?.FullAddress || typeof feature.properties.FullAddress !== 'string') {
+        console.warn(`Skipping invalid FullAddress at index ${i}`);
       }
     });
   })
   .catch(error => console.error('Error loading lead pipe data:', error));
        
   function normalizeAddress(address) {
-  if (!address || typeof address !== 'string') return '';
-  return address
-    .toLowerCase()
-    .replace(/\bapt\b.*$/i, '')               // Remove apartment info
-    .replace(/\bfloor\b.*$/i, '')             // Remove floor info
-    .replace(/\b(street|st)\b/g, 'st')        // Normalize "street"
-    .replace(/\b(avenue|ave)\b/g, 'ave')      // Normalize "avenue"
-    .replace(/\b(road|rd)\b/g, 'rd')          // Normalize "road"
-    .replace(/\b(place|pl)\b/g, 'pl')         // Normalize "place"
-    .replace(/\b(drive|dr)\b/g, 'dr')         // Normalize "drive"
-    .replace(/\bbrooklyn\b/g, '')
-    .replace(/\bmanhattan\b/g, '')
-    .replace(/\bqueens\b/g, '')
-    .replace(/\bbronx\b/g, '')
-    .replace(/\bny\b/g, '')
-    .replace(/\busa\b/g, '')
-    .replace(/[^\w\s]/g, '')                  // Remove punctuation
-    .replace(/\s+/g, ' ')                     // Collapse multiple spaces
-    .trim();
-}
+    if (!address || typeof address !== 'string') return '';
+    return address
+      .trim()
+      .toLowerCase()
+      .replace(/\bapt\b.*$/i, '') // Remove apartment info
+      .replace(/\bfloor\b.*$/i, '') // Remove floor info
+      .replace(/\b(street|st)\b/g, 'st')
+      .replace(/\b(avenue|ave)\b/g, 'ave')
+      .replace(/\b(road|rd)\b/g, 'rd')
+      .replace(/\b(place|pl)\b/g, 'pl')
+      .replace(/\b(drive|dr)\b/g, 'dr')
+      .replace(/\b(terrace|ter)\b/g, 'ter')
+      .replace(/\b(boulevard|blvd)\b/g, 'blvd')
+      .replace(/\b(court|ct)\b/g, 'ct')
+      .replace(/\b(brooklyn|manhattan|queens|bronx|ny|usa)\b/g, '')
+      .replace(/\b\d{5}(?:-\d{4})?\b/g, '') // remove ZIP codes
+      .replace(/[^\w\s]/g, '') // remove punctuation
+      .replace(/\s+/g, ' ')
+      .replace(/,+$/, '') // remove trailing commas (if any)
+      .trim();
+  }
 
 function isNearDirtyTank(address) {
   const userNorm = normalizeAddress(address);
@@ -1032,37 +1033,46 @@ function isNearDirtyTank(address) {
 }
 
       function extractKeyParts(addr) {
-  const match = addr.match(/^(\d+)\s+(.+)$/); // e.g. "125 worth st" → { number: "125", street: "worth st" }
-  return match ? { number: match[1], street: normalizeAddress(match[2]) } : null;
-}
+        const normalized = normalizeAddress(addr).replace(/\b\d{5}(?:-\d{4})?\b/g, '').trim();
+        const match = normalized.match(/^(\d{1,5})\s+(.+)$/);
+        if (!match) return null;
+        return {
+          number: match[1],
+          street: match[2].trim()
+        };
+      }
 
-function hasLeadPipes(address) {
-  if (!Leadinfo) return false;
+      function hasLeadPipes(address) {
+  if (!Leadinfo) return "Unknown";
+
   const userNorm = normalizeAddress(address);
   const userParts = extractKeyParts(userNorm);
   if (!userParts) {
     console.warn("Could not parse user address:", userNorm);
-    return false;
+    return "Unknown";
   }
 
   console.log("Checking for lead pipes at:", userParts);
 
-  return Leadinfo.features.some(feature => {
+  for (const feature of Leadinfo.features) {
     const rawAddr = feature?.properties?.FullAddress;
-    if (!rawAddr) return false;
+    const material = feature?.properties?.MATERIAL_GROUP;
+    if (!rawAddr || !material) continue;
 
-    const datasetNorm = normalizeAddress(rawAddr);
-    const datasetParts = extractKeyParts(datasetNorm);
-    if (!datasetParts) return false;
+    const datasetParts = extractKeyParts(normalizeAddress(rawAddr));
+    if (!datasetParts) continue;
 
-    const isMatch = userParts.number === datasetParts.number && userParts.street === datasetParts.street;
+    const isMatch =
+      userParts.number === datasetParts.number &&
+      userParts.street === datasetParts.street;
 
     if (isMatch) {
       console.warn("✅ Lead pipe match:", rawAddr, "<-->", address);
+      return material.trim(); // returns "Lead", "Potential Lead", etc.
     }
+  }
 
-    return isMatch;
-  });
+  return "Unknown";
 }
 
       document.querySelectorAll(".floor-button").forEach(button => {
@@ -1075,11 +1085,23 @@ function hasLeadPipes(address) {
             return;
           }
 
-          const lead = hasLeadPipes(address);
-          const tank = isHighFloor && isNearDirtyTank(address);
+          const leadStatus = hasLeadPipes(address);
+const tank = isHighFloor && isNearDirtyTank(address);
 
-          const output = `Your apartment ${lead ? "<span style='background-color: yellow; color: black; font-weight: bold;'>DOES</span>" : "does not"} have known lead pipes and ${tank ? "<span style='background-color: yellow; color: black; font-weight: bold;'>DOES</span>" : "does not"} have a water tank with known health code violations.`;
+let leadMessage;
+switch (leadStatus) {
+  case "Lead":
+  case "Potential Lead":
+    leadMessage = `<span style='background-color: yellow; color: black; font-weight: bold;'>${leadStatus.toUpperCase()}</span>`;
+    break;
+  case "Not Lead":
+    leadMessage = "non-lead";
+    break;
+  default:
+    leadMessage = "unknown";
+}
 
+const output = `Your apartment has ${leadMessage} pipes and ${tank ? "<span style='background-color: yellow; color: black; font-weight: bold;'>DOES</span>" : "does not"} have a water tank with known health code violations.`;
           const outputBox = document.getElementById("custom-output");
           document.getElementById("result-text").innerHTML = output;
           outputBox.classList.add("visible");
